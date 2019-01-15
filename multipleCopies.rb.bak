@@ -1,0 +1,35 @@
+# chef-apply multipleCopies.rb
+
+for i in 1..3
+  directory "../multipleCopy#{i}" do
+    action :create
+    mode "0755"
+    owner "ubuntu"
+    group "root"
+  end
+
+  file "../multipleCopy#{i}/secret.txt" do
+    action :create
+    mode "0755"
+    owner "ubuntu"
+    group "root"
+  end
+end
+
+# times needs to delimit a block {}
+# 3.times { do something  }
+# 3.times do |x|
+#   do something
+# end
+# max_by Returns the object with the max value in the given enum
+latestVersion = (3.times.max_by { |x| ::File.mtime("../multipleCopy#{x+1}/secret.txt") }) + 1
+  
+# Hard link (older files ponit to latest). Just another directory entry to the same file.
+for i in 1..3
+  if i != latestVersion
+    link "../multipleCopy#{i}/secret.txt" do
+      to "../multipleCopy#{latestVersion}/secret.txt"
+      link_type :hard
+    end
+  end
+end
